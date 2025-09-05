@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../utils/api";
 
 const Leaderboard = () => {
   const [leaderboard, setLeaderboard] = useState([]);
@@ -18,7 +18,7 @@ const Leaderboard = () => {
           ? "/api/leaderboard/overall"
           : `/api/leaderboard/week/${currentWeek}`;
 
-      const response = await axios.get(endpoint);
+      const response = await api.get(endpoint);
       console.log(
         `📊 Leaderboard API response for ${viewMode}:`,
         response.data
