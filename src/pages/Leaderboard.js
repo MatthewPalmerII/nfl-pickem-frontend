@@ -19,6 +19,10 @@ const Leaderboard = () => {
           : `/api/leaderboard/week/${currentWeek}`;
 
       const response = await axios.get(endpoint);
+      console.log(
+        `📊 Leaderboard API response for ${viewMode}:`,
+        response.data
+      );
       setLeaderboard(response.data.leaderboard || []);
     } catch (error) {
       console.error("Error fetching leaderboard:", error);
@@ -174,14 +178,14 @@ const Leaderboard = () => {
                     <div className="text-sm text-gray-900">
                       {viewMode === "overall"
                         ? player.totalPicks
-                        : player.weekPicks}
+                        : player.totalPicks}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     <div className="text-sm text-gray-900">
                       {viewMode === "overall"
                         ? `${player.winPercentage}%`
-                        : `${player.correctPicks}/${player.weekPicks}`}
+                        : `${player.correctPicks}/${player.totalPicks}`}
                     </div>
                   </td>
                   {viewMode === "overall" && (
@@ -200,7 +204,7 @@ const Leaderboard = () => {
                   )}
                   <td className="px-6 py-4 whitespace-nowrap text-center">
                     <div className="text-lg font-bold text-nfl-blue">
-                      {player.points}
+                      {player.totalPoints}
                     </div>
                   </td>
                 </tr>
@@ -230,14 +234,14 @@ const Leaderboard = () => {
 
           <div className="card text-center">
             <div className="text-2xl font-bold text-nfl-blue mb-2">
-              {leaderboard[0]?.points || 0}
+              {leaderboard[0]?.totalPoints || 0}
             </div>
             <div className="text-gray-600">Top Score</div>
           </div>
 
           <div className="card text-center">
             <div className="text-2xl font-bold text-nfl-blue mb-2">
-              {leaderboard[leaderboard.length - 1]?.points || 0}
+              {leaderboard[leaderboard.length - 1]?.totalPoints || 0}
             </div>
             <div className="text-gray-600">Lowest Score</div>
           </div>
