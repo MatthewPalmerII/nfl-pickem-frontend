@@ -70,7 +70,7 @@ const ViewPicks = () => {
   };
 
   const getGamePicks = (gameId) => {
-    return picks.filter((pick) => pick.gameId === gameId);
+    return picks.filter((pick) => pick.gameId._id === gameId);
   };
 
   const getPickStatus = (pick, game) => {
@@ -217,46 +217,80 @@ const ViewPicks = () => {
                   </div>
                 </div>
 
-                {/* Picks List */}
-                <div className="space-y-2">
-                  <h4 className="font-medium text-gray-900 mb-2">
-                    All Picks ({gamePicks.length} total)
-                  </h4>
-
-                  {gamePicks.length === 0 ? (
-                    <p className="text-gray-500 text-sm">
-                      No picks submitted for this game.
-                    </p>
-                  ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-                      {gamePicks.map((pick) => {
-                        const status = getPickStatus(pick, game);
-                        return (
-                          <div
-                            key={pick._id}
-                            className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+                {/* Picks Table - Admin Dashboard Style */}
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Player
+                        </th>
+                        <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Pick
+                        </th>
+                        <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Result
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {gamePicks.length === 0 ? (
+                        <tr>
+                          <td
+                            colSpan="3"
+                            className="px-4 py-8 text-center text-gray-500"
                           >
-                            <div className="flex-1">
-                              <div className="font-medium text-gray-900">
-                                {pick.userId?.name || "Unknown User"}
-                              </div>
-                              <div className="text-sm text-gray-600">
-                                Picked:{" "}
-                                <span className="font-medium">
+                            No picks submitted for this game.
+                          </td>
+                        </tr>
+                      ) : (
+                        gamePicks.map((pick) => {
+                          const status = getPickStatus(pick, game);
+                          return (
+                            <tr key={pick._id} className="hover:bg-gray-50">
+                              <td className="px-4 py-3 whitespace-nowrap">
+                                <div className="flex items-center">
+                                  <div className="flex-shrink-0 h-8 w-8">
+                                    <div className="h-8 w-8 rounded-full bg-nfl-blue flex items-center justify-center text-white font-bold text-sm">
+                                      {pick.userId?.name
+                                        ?.charAt(0)
+                                        .toUpperCase() || "?"}
+                                    </div>
+                                  </div>
+                                  <div className="ml-3">
+                                    <div className="text-sm font-medium text-gray-900">
+                                      {pick.userId?.name || "Unknown User"}
+                                    </div>
+                                    <div className="text-sm text-gray-500">
+                                      {pick.userId?.email || ""}
+                                    </div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-center">
+                                <span
+                                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                    pick.selectedTeam === game.awayTeam
+                                      ? "bg-blue-100 text-blue-800"
+                                      : "bg-green-100 text-green-800"
+                                  }`}
+                                >
                                   {pick.selectedTeam}
                                 </span>
-                              </div>
-                            </div>
-                            <div
-                              className={`text-sm font-medium ${status.color}`}
-                            >
-                              {status.text}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
+                              </td>
+                              <td className="px-4 py-3 whitespace-nowrap text-center">
+                                <span
+                                  className={`text-sm font-medium ${status.color}`}
+                                >
+                                  {status.text}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             );
@@ -276,9 +310,9 @@ const ViewPicks = () => {
 
           <div className="card text-center">
             <div className="text-2xl font-bold text-nfl-blue mb-2">
-              {picks.length}
+              {picks.filter((pick) => pick.week === currentWeek).length}
             </div>
-            <div className="text-gray-600">Total Picks</div>
+            <div className="text-gray-600">Week Picks</div>
           </div>
 
           <div className="card text-center">
