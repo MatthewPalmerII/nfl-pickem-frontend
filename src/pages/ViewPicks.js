@@ -73,6 +73,28 @@ const ViewPicks = () => {
     return picks.filter((pick) => pick.gameId && pick.gameId._id === gameId);
   };
 
+  const getAllUsers = () => {
+    const userMap = new Map();
+    picks.forEach((pick) => {
+      if (pick.userId && !userMap.has(pick.userId._id)) {
+        userMap.set(pick.userId._id, pick.userId);
+      }
+    });
+    return Array.from(userMap.values()).sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+  };
+
+  const getUserPickForGame = (userId, gameId) => {
+    return picks.find(
+      (pick) =>
+        pick.userId &&
+        pick.userId._id === userId &&
+        pick.gameId &&
+        pick.gameId._id === gameId
+    );
+  };
+
   const getPickStatus = (pick, game) => {
     if (game.status === "final") {
       if (pick.isCorrect === true) {
@@ -134,7 +156,7 @@ const ViewPicks = () => {
         </div>
       </div>
 
-      {/* Games List */}
+      {/* Picks Grid */}
       {games.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
           <div className="text-4xl mb-2">🏈</div>
@@ -144,157 +166,76 @@ const ViewPicks = () => {
           </p>
         </div>
       ) : (
-        <div className="space-y-6">
-          {games.map((game) => {
-            const gamePicks = getGamePicks(game._id);
-            const awayPicks = gamePicks.filter(
-              (pick) => pick.selectedTeam === game.awayTeam
-            ).length;
-            const homePicks = gamePicks.filter(
-              (pick) => pick.selectedTeam === game.homeTeam
-            ).length;
-
-            return (
-              <div key={game._id} className="card">
-                {/* Game Header */}
-                <div className="flex justify-between items-center mb-4">
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold text-gray-900">
+        <div className="card overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr>
+                <th className="px-4 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider sticky left-0 bg-white border-r">
+                  Player
+                </th>
+                {games.map((game) => (
+                  <th
+                    key={game._id}
+                    className="px-4 py-3 text-center text-sm font-medium text-gray-500 uppercase tracking-wider min-w-[120px]"
+                  >
+                    <div className="text-xs">
                       {game.awayTeam} @ {game.homeTeam}
-                    </h3>
-                    <div className="flex items-center space-x-4 mt-2">
-                      <span className="text-sm text-gray-500">
-                        {new Date(game.date).toLocaleDateString()} at{" "}
-                        {game.time}
-                      </span>
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getGameStatusColor(
-                          game.status
-                        )}`}
-                      >
-                        {game.status === "final"
-                          ? "Final"
-                          : game.status === "live"
-                          ? "Live"
-                          : "Scheduled"}
-                      </span>
                     </div>
-                  </div>
-
-                  {/* Game Score */}
-                  {game.status === "final" && (
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-nfl-blue">
+                    {game.status === "final" && (
+                      <div className="text-xs text-gray-400 mt-1">
                         {game.awayScore} - {game.homeScore}
                       </div>
-                      <div className="text-sm text-gray-600">
-                        Winner: {game.winner}
+                    )}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {getAllUsers().map((user) => (
+                <tr key={user._id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3 whitespace-nowrap sticky left-0 bg-white border-r">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-8 w-8">
+                        <div className="h-8 w-8 rounded-full bg-nfl-blue flex items-center justify-center text-white font-bold text-sm">
+                          {user.name?.charAt(0).toUpperCase() || "?"}
+                        </div>
+                      </div>
+                      <div className="ml-3">
+                        <div className="text-sm font-medium text-gray-900">
+                          {user.name}
+                        </div>
                       </div>
                     </div>
-                  )}
-                </div>
-
-                {/* Pick Distribution */}
-                <div className="mb-4">
-                  <div className="flex justify-between text-sm text-gray-600 mb-2">
-                    <span>
-                      {game.awayTeam}: {awayPicks} picks
-                    </span>
-                    <span>
-                      {game.homeTeam}: {homePicks} picks
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="bg-nfl-blue h-2 rounded-full transition-all duration-300"
-                      style={{
-                        width:
-                          gamePicks.length > 0
-                            ? `${(awayPicks / gamePicks.length) * 100}%`
-                            : "50%",
-                      }}
-                    ></div>
-                  </div>
-                </div>
-
-                {/* Picks Table - Admin Dashboard Style */}
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Player
-                        </th>
-                        <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Pick
-                        </th>
-                        <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Result
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {gamePicks.length === 0 ? (
-                        <tr>
-                          <td
-                            colSpan="3"
-                            className="px-4 py-8 text-center text-gray-500"
+                  </td>
+                  {games.map((game) => {
+                    const userPick = getUserPickForGame(user._id, game._id);
+                    return (
+                      <td
+                        key={`${user._id}-${game._id}`}
+                        className="px-4 py-3 text-center"
+                      >
+                        {userPick ? (
+                          <div
+                            className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
+                              userPick.isCorrect === true
+                                ? "bg-green-100 text-green-800"
+                                : userPick.isCorrect === false
+                                ? "bg-red-100 text-red-800"
+                                : "bg-gray-100 text-gray-800"
+                            }`}
                           >
-                            No picks submitted for this game.
-                          </td>
-                        </tr>
-                      ) : (
-                        gamePicks.map((pick) => {
-                          const status = getPickStatus(pick, game);
-                          return (
-                            <tr key={pick._id} className="hover:bg-gray-50">
-                              <td className="px-4 py-3 whitespace-nowrap">
-                                <div className="flex items-center">
-                                  <div className="flex-shrink-0 h-8 w-8">
-                                    <div className="h-8 w-8 rounded-full bg-nfl-blue flex items-center justify-center text-white font-bold text-sm">
-                                      {pick.userId?.name
-                                        ?.charAt(0)
-                                        .toUpperCase() || "?"}
-                                    </div>
-                                  </div>
-                                  <div className="ml-3">
-                                    <div className="text-sm font-medium text-gray-900">
-                                      {pick.userId?.name || "Unknown User"}
-                                    </div>
-                                    <div className="text-sm text-gray-500">
-                                      {pick.userId?.email || ""}
-                                    </div>
-                                  </div>
-                                </div>
-                              </td>
-                              <td className="px-4 py-3 whitespace-nowrap text-center">
-                                <span
-                                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                    pick.selectedTeam === game.awayTeam
-                                      ? "bg-blue-100 text-blue-800"
-                                      : "bg-green-100 text-green-800"
-                                  }`}
-                                >
-                                  {pick.selectedTeam}
-                                </span>
-                              </td>
-                              <td className="px-4 py-3 whitespace-nowrap text-center">
-                                <span
-                                  className={`text-sm font-medium ${status.color}`}
-                                >
-                                  {status.text}
-                                </span>
-                              </td>
-                            </tr>
-                          );
-                        })
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            );
-          })}
+                            {userPick.selectedTeam}
+                          </div>
+                        ) : (
+                          <span className="text-gray-400 text-xs">-</span>
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
