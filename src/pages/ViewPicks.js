@@ -70,7 +70,7 @@ const ViewPicks = () => {
   };
 
   const getGamePicks = (gameId) => {
-    return picks.filter((pick) => pick.gameId._id === gameId);
+    return picks.filter((pick) => pick.gameId && pick.gameId._id === gameId);
   };
 
   const getPickStatus = (pick, game) => {
