@@ -14,6 +14,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import MakePicks from "./pages/MakePicks";
 import Leaderboard from "./pages/Leaderboard";
+import ViewPicks from "./pages/ViewPicks";
 import Rules from "./pages/Rules";
 import AdminDashboard from "./pages/AdminDashboard";
 
@@ -61,6 +62,14 @@ function AppContent() {
               element={
                 <ProtectedRoute>
                   <Leaderboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/view-picks"
+              element={
+                <ProtectedRoute>
+                  <ViewPicks />
                 </ProtectedRoute>
               }
             />

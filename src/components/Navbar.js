@@ -59,6 +59,12 @@ const Navbar = () => {
                 >
                   Leaderboard
                 </Link>
+                <Link
+                  to="/view-picks"
+                  className="text-white hover:text-nfl-gold px-3 py-2 rounded-md text-sm font-medium"
+                >
+                  View Picks
+                </Link>
                 {user.isAdmin && (
                   <Link
                     to="/admin"
@@ -170,6 +176,13 @@ const Navbar = () => {
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     Leaderboard
+                  </Link>
+                  <Link
+                    to="/view-picks"
+                    className="text-white hover:text-nfl-gold block px-3 py-2 rounded-md text-base font-medium"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    View Picks
                   </Link>
                   <div className="px-3 py-2">
                     <span className="text-white text-sm">
