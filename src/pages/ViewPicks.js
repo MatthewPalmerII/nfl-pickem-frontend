@@ -18,25 +18,45 @@ const ViewPicks = () => {
     try {
       setLoading(true);
 
-      // Fetch games for the current week
-      const gamesResponse = await api.get(
-        `/api/games/week/${currentWeek}?season=${selectedSeason}`
-      );
-      const weekGames = gamesResponse.data || [];
-
-      // Filter to only show in-progress or finalized games
-      const relevantGames = weekGames.filter(
-        (game) => game.status === "live" || game.status === "final"
-      );
-
-      setGames(relevantGames);
-
-      // Fetch picks for the current week
+      // Fetch picks for the current week (this includes game data)
       const picksResponse = await api.get(
         `/api/picks/week/${currentWeek}/all?season=${selectedSeason}`
       );
       const weekPicks = picksResponse.data || [];
 
+      console.log(`📊 Week ${currentWeek} picks API response:`, weekPicks);
+
+      // Extract unique games from picks data
+      const gamesMap = new Map();
+      weekPicks.forEach((pick) => {
+        if (pick.gameId && !gamesMap.has(pick.gameId._id)) {
+          gamesMap.set(pick.gameId._id, pick.gameId);
+        }
+      });
+
+      const allGames = Array.from(gamesMap.values());
+      console.log(
+        `📊 All games from picks:`,
+        allGames.map((g) => ({
+          game: `${g.awayTeam} @ ${g.homeTeam}`,
+          status: g.status,
+        }))
+      );
+
+      // Filter to only show in-progress or finalized games
+      const relevantGames = allGames.filter(
+        (game) => game.status === "live" || game.status === "final"
+      );
+
+      console.log(
+        `📊 Relevant games (live/final):`,
+        relevantGames.map((g) => ({
+          game: `${g.awayTeam} @ ${g.homeTeam}`,
+          status: g.status,
+        }))
+      );
+
+      setGames(relevantGames);
       setPicks(weekPicks);
 
       console.log(
