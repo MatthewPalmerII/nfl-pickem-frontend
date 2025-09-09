@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import api from "../utils/api";
+import WeekSelector from "../components/WeekSelector";
 
 const ViewPicks = () => {
   const [games, setGames] = useState([]);
@@ -136,25 +137,11 @@ const ViewPicks = () => {
       </div>
 
       {/* Week Selector */}
-      <div className="flex justify-center mb-8">
-        <div className="flex space-x-2">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18].map(
-            (week) => (
-              <button
-                key={week}
-                onClick={() => setCurrentWeek(week)}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
-                  currentWeek === week
-                    ? "bg-nfl-blue text-white"
-                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                }`}
-              >
-                Week {week}
-              </button>
-            )
-          )}
-        </div>
-      </div>
+      <WeekSelector
+        currentWeek={currentWeek}
+        onWeekChange={setCurrentWeek}
+        className="mb-8"
+      />
 
       {/* Picks Grid */}
       {games.length === 0 ? (
