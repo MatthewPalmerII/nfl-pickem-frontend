@@ -169,30 +169,108 @@ const MakePicks = () => {
 
     setSubmitting(true);
     try {
-      const picksData = Object.entries(picks)
-        .filter(([key]) => !key.startsWith("mondayNight"))
-        .map(([gameId, team]) => ({
-          gameId,
-          selectedTeam: team,
-          week: currentWeek,
-          mondayNightScore:
-            picks.mondayNightAwayScore !== undefined &&
-            picks.mondayNightHomeScore !== undefined
-              ? picks.mondayNightAwayScore + picks.mondayNightHomeScore
-              : null,
-          mondayNightAwayScore: picks.mondayNightAwayScore || null,
-          mondayNightHomeScore: picks.mondayNightHomeScore || null,
-        }));
-
       // Check if user already has picks for this week
       const hasExistingPicks = existingPicks && existingPicks.length > 0;
 
       if (hasExistingPicks) {
-        // Update existing picks
-        await api.put("/api/picks/update", { picks: picksData });
-        toast.success("Picks updated successfully!");
+        // For updates, only send picks that have actually changed
+        const changedPicks = [];
+
+        // Check each game pick for changes
+        Object.entries(picks)
+          .filter(([key]) => !key.startsWith("mondayNight"))
+          .forEach(([gameId, team]) => {
+            const existingPick = existingPicks.find(
+              (pick) => pick.gameId === gameId
+            );
+
+            // If no existing pick for this game, or the team selection changed
+            if (!existingPick || existingPick.selectedTeam !== team) {
+              changedPicks.push({
+                gameId,
+                selectedTeam: team,
+                week: currentWeek,
+                mondayNightScore:
+                  picks.mondayNightAwayScore !== undefined &&
+                  picks.mondayNightHomeScore !== undefined
+                    ? picks.mondayNightAwayScore + picks.mondayNightHomeScore
+                    : null,
+                mondayNightAwayScore: picks.mondayNightAwayScore || null,
+                mondayNightHomeScore: picks.mondayNightHomeScore || null,
+              });
+            }
+          });
+
+        // Check if Monday Night Football scores changed
+        const existingMNFPick = existingPicks.find(
+          (pick) => pick.isMondayNight
+        );
+        if (existingMNFPick) {
+          const mondayNightScoreChanged =
+            existingMNFPick.mondayNightAwayScore !==
+              picks.mondayNightAwayScore ||
+            existingMNFPick.mondayNightHomeScore !== picks.mondayNightHomeScore;
+
+          if (mondayNightScoreChanged) {
+            // Add any existing pick to the changed picks if it's not already there
+            const existingGamePick = changedPicks.find(
+              (pick) => pick.gameId === existingMNFPick.gameId
+            );
+            if (existingGamePick) {
+              // Update the existing pick with new MNF scores
+              existingGamePick.mondayNightScore =
+                picks.mondayNightAwayScore !== undefined &&
+                picks.mondayNightHomeScore !== undefined
+                  ? picks.mondayNightAwayScore + picks.mondayNightHomeScore
+                  : null;
+              existingGamePick.mondayNightAwayScore =
+                picks.mondayNightAwayScore || null;
+              existingGamePick.mondayNightHomeScore =
+                picks.mondayNightHomeScore || null;
+            } else {
+              // Add the MNF pick with updated scores
+              changedPicks.push({
+                gameId: existingMNFPick.gameId,
+                selectedTeam: existingMNFPick.selectedTeam,
+                week: currentWeek,
+                mondayNightScore:
+                  picks.mondayNightAwayScore !== undefined &&
+                  picks.mondayNightHomeScore !== undefined
+                    ? picks.mondayNightAwayScore + picks.mondayNightHomeScore
+                    : null,
+                mondayNightAwayScore: picks.mondayNightAwayScore || null,
+                mondayNightHomeScore: picks.mondayNightHomeScore || null,
+              });
+            }
+          }
+        }
+
+        if (changedPicks.length === 0) {
+          toast.info("No changes detected");
+          setSubmitting(false);
+          return;
+        }
+
+        // Update only the changed picks
+        await api.put("/api/picks/update", { picks: changedPicks });
+        toast.success(`${changedPicks.length} pick(s) updated successfully!`);
       } else {
-        // Submit new picks
+        // For new submissions, send all picks
+        const picksData = Object.entries(picks)
+          .filter(([key]) => !key.startsWith("mondayNight"))
+          .map(([gameId, team]) => ({
+            gameId,
+            selectedTeam: team,
+            week: currentWeek,
+            mondayNightScore:
+              picks.mondayNightAwayScore !== undefined &&
+              picks.mondayNightHomeScore !== undefined
+                ? picks.mondayNightAwayScore + picks.mondayNightHomeScore
+                : null,
+            mondayNightAwayScore: picks.mondayNightAwayScore || null,
+            mondayNightHomeScore: picks.mondayNightHomeScore || null,
+          }));
+
         await api.post("/api/picks/submit", { picks: picksData });
         toast.success("Picks submitted successfully!");
       }
