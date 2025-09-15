@@ -20,13 +20,33 @@ import AdminDashboard from "./pages/AdminDashboard";
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  // Show loading spinner while checking authentication
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-nfl-blue"></div>
+      </div>
+    );
+  }
+
   return user ? children : <Navigate to="/login" />;
 };
 
 // Admin Route Component
 const AdminRoute = ({ children }) => {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+
+  // Show loading spinner while checking authentication
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-nfl-blue"></div>
+      </div>
+    );
+  }
+
   return user && user.isAdmin ? children : <Navigate to="/" />;
 };
 
