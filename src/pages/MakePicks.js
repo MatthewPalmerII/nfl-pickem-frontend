@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
 import toast from "react-hot-toast";
 import WeekSelector from "../components/WeekSelector";
+import { getCurrentNFLWeek } from "../utils/weekUtils";
 
 const MakePicks = () => {
   const navigate = useNavigate();
   const [games, setGames] = useState([]);
   const [picks, setPicks] = useState({});
   const [existingPicks, setExistingPicks] = useState([]);
-  const [currentWeek, setCurrentWeek] = useState(1);
+  const [currentWeek, setCurrentWeek] = useState(getCurrentNFLWeek());
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [deadline, setDeadline] = useState(null);
@@ -18,18 +19,6 @@ const MakePicks = () => {
   const formatGameDateTime = (dateString, timeString) => {
     try {
       const date = new Date(dateString);
-
-      // Convert to Eastern Time
-      const easternTime = date.toLocaleString("en-US", {
-        timeZone: "America/New_York",
-        weekday: "long",
-        month: "2-digit",
-        day: "2-digit",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: true,
-      });
 
       // Extract just the time part from the timeString (e.g., "8:20 PM ET")
       const timeOnly = timeString ? timeString.replace(" ET", "") : "";
@@ -50,11 +39,7 @@ const MakePicks = () => {
     }
   };
 
-  useEffect(() => {
-    fetchGames();
-  }, [currentWeek]);
-
-  const fetchGames = async () => {
+  const fetchGames = useCallback(async () => {
     try {
       const response = await api.get(`/api/games/week/${currentWeek}`);
       setGames(response.data.games || []);
@@ -134,7 +119,11 @@ const MakePicks = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentWeek]);
+
+  useEffect(() => {
+    fetchGames();
+  }, [fetchGames]);
 
   const handlePick = (gameId, team) => {
     setPicks((prev) => ({

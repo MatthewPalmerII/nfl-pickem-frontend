@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import api from "../utils/api";
 import toast from "react-hot-toast";
+import { getCurrentNFLWeek } from "../utils/weekUtils";
 
 const AdminDashboard = () => {
   const { user } = useAuth();
@@ -10,7 +11,7 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [games, setGames] = useState([]);
   const [picks, setPicks] = useState([]);
-  const [selectedWeek, setSelectedWeek] = useState(1);
+  const [selectedWeek, setSelectedWeek] = useState(getCurrentNFLWeek());
   const [selectedUser, setSelectedUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editingPick, setEditingPick] = useState(null);

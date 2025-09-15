@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from "react";
 import api from "../utils/api";
 import WeekSelector from "../components/WeekSelector";
+import { getCurrentNFLWeek, getCurrentSeason } from "../utils/weekUtils";
 
 const ViewPicks = () => {
   const [games, setGames] = useState([]);
   const [picks, setPicks] = useState([]);
-  const [currentWeek, setCurrentWeek] = useState(1);
+  const [currentWeek, setCurrentWeek] = useState(getCurrentNFLWeek());
   const [loading, setLoading] = useState(true);
-  const [selectedSeason, setSelectedSeason] = useState(
-    new Date().getFullYear()
-  );
+  const [selectedSeason, setSelectedSeason] = useState(getCurrentSeason());
 
   useEffect(() => {
     fetchGamesAndPicks();
