@@ -378,14 +378,34 @@ const MakePicks = () => {
                     </div>
                   </div>
 
-                  {/* Game Venue */}
-                  {game.venue && (
-                    <div className="mt-3 text-center">
+                  {/* Game Venue and Spread */}
+                  <div className="mt-3 text-center space-y-2">
+                    {game.venue && (
                       <div className="text-sm text-blue-600 font-medium">
                         📍 {game.venue}
                       </div>
-                    </div>
-                  )}
+                    )}
+                    {(game.spread || game.overUnder) && (
+                      <div className="text-sm text-gray-600">
+                        {game.spread && (
+                          <span className="mr-4">
+                            📊 Spread:{" "}
+                            <span className="font-semibold text-nfl-blue">
+                              {game.spread}
+                            </span>
+                          </span>
+                        )}
+                        {game.overUnder && (
+                          <span>
+                            🎯 O/U:{" "}
+                            <span className="font-semibold text-nfl-blue">
+                              {game.overUnder}
+                            </span>
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
 
                   {isGameLocked(game.date) && (
                     <div className="mt-3 text-center">
