@@ -272,6 +272,27 @@ const AdminDashboard = () => {
     return games.find((g) => g._id === gameId);
   };
 
+  const getMondayNightGame = () => {
+    return getWeekGames().find((game) => game.isMondayNight);
+  };
+
+  const getMondayNightPicks = () => {
+    const mondayNightGame = getMondayNightGame();
+    if (!mondayNightGame) return [];
+
+    return picks.filter((pick) => {
+      // Check if pick is for the Monday Night Game
+      // Handle both populated and unpopulated gameId
+      const pickGameId = pick.gameId?._id
+        ? pick.gameId._id.toString()
+        : pick.gameId?.toString
+        ? pick.gameId.toString()
+        : pick.gameId;
+      const mondayGameId = mondayNightGame._id.toString();
+      return pickGameId === mondayGameId;
+    });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -495,6 +516,114 @@ const AdminDashboard = () => {
             </table>
           </div>
         </div>
+
+        {/* Monday Night Game Scores Section */}
+        {getMondayNightGame() && (
+          <div className="bg-white shadow overflow-hidden sm:rounded-md mb-6">
+            <div className="px-4 py-5 sm:px-6">
+              <h3 className="text-lg leading-6 font-medium text-gray-900">
+                Week {selectedWeek} - Monday Night Game Scores
+              </h3>
+              <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                View all user scores for the Monday Night Game:{" "}
+                <span className="font-semibold">
+                  {getMondayNightGame().awayTeam} @{" "}
+                  {getMondayNightGame().homeTeam}
+                </span>
+              </p>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      User
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actual Game Total
+                      <div className="text-xs text-gray-400 font-normal mt-1">
+                        ({getMondayNightGame().awayTeam} @{" "}
+                        {getMondayNightGame().homeTeam})
+                      </div>
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      User's Guessed Total
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {users.map((user) => {
+                    const mondayNightPick = getMondayNightPicks().find(
+                      (pick) => {
+                        // Handle both populated and unpopulated userId
+                        const pickUserId = pick.userId?._id
+                          ? pick.userId._id.toString()
+                          : pick.userId?.toString
+                          ? pick.userId.toString()
+                          : pick.userId;
+                        const targetUserId = user._id.toString();
+                        return pickUserId === targetUserId;
+                      }
+                    );
+
+                    const mondayNightGame = getMondayNightGame();
+                    const actualGameTotal =
+                      mondayNightGame.awayScore !== null &&
+                      mondayNightGame.awayScore !== undefined &&
+                      mondayNightGame.homeScore !== null &&
+                      mondayNightGame.homeScore !== undefined
+                        ? mondayNightGame.awayScore + mondayNightGame.homeScore
+                        : null;
+
+                    return (
+                      <tr key={user._id}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0 h-10 w-10">
+                              <div className="h-10 w-10 rounded-full bg-nfl-blue flex items-center justify-center">
+                                <span className="text-white font-medium text-sm">
+                                  {user.name.charAt(0).toUpperCase()}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="ml-4">
+                              <div className="text-sm font-medium text-gray-900">
+                                {user.name}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {user.email}
+                              </div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {actualGameTotal !== null ? (
+                            <span className="font-medium">
+                              {actualGameTotal}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">—</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {mondayNightPick?.mondayNightScore !== null &&
+                          mondayNightPick?.mondayNightScore !== undefined ? (
+                            <span className="font-medium">
+                              {mondayNightPick.mondayNightScore}
+                            </span>
+                          ) : (
+                            <span className="text-gray-400">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
         {/* Users and Picks Table */}
         <div className="bg-white shadow overflow-hidden sm:rounded-md">
