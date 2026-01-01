@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import api from "../utils/api";
+import { getCurrentSeason } from "../utils/weekUtils";
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -31,9 +32,10 @@ const Dashboard = () => {
 
   const fetchDashboardData = async () => {
     try {
+      const season = getCurrentSeason();
       const [statsResponse, picksResponse, logResponse] = await Promise.all([
-        api.get("/api/stats/user"),
-        api.get("/api/picks/recent"),
+        api.get(`/api/stats/user?season=${season}`),
+        api.get(`/api/picks/recent?season=${season}`),
         api.get("/api/picks/league-log"),
       ]);
 

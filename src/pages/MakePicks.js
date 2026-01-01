@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
 import toast from "react-hot-toast";
 import WeekSelector from "../components/WeekSelector";
-import { getCurrentNFLWeek } from "../utils/weekUtils";
+import { getCurrentNFLWeek, getCurrentSeason } from "../utils/weekUtils";
 
 const MakePicks = () => {
   const navigate = useNavigate();
@@ -41,7 +41,10 @@ const MakePicks = () => {
 
   const fetchGames = useCallback(async () => {
     try {
-      const response = await api.get(`/api/games/week/${currentWeek}`);
+      const season = getCurrentSeason();
+      const response = await api.get(
+        `/api/games/week/${currentWeek}?season=${season}`
+      );
       setGames(response.data.games || []);
       setDeadline(response.data.deadline);
 

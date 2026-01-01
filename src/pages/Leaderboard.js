@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import api from "../utils/api";
 import WeekSelector from "../components/WeekSelector";
+import { getCurrentSeason } from "../utils/weekUtils";
 
 const Leaderboard = () => {
   const [leaderboard, setLeaderboard] = useState([]);
@@ -14,10 +15,11 @@ const Leaderboard = () => {
 
   const fetchLeaderboard = async () => {
     try {
+      const season = getCurrentSeason();
       const endpoint =
         viewMode === "overall"
-          ? "/api/leaderboard/overall"
-          : `/api/leaderboard/week/${currentWeek}`;
+          ? `/api/leaderboard/overall?season=${season}`
+          : `/api/leaderboard/week/${currentWeek}?season=${season}`;
 
       const response = await api.get(endpoint);
       console.log(
