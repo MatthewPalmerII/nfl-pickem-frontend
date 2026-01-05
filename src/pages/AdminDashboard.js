@@ -276,6 +276,33 @@ const AdminDashboard = () => {
     return getWeekGames().find((game) => game.isMondayNight);
   };
 
+  const getUserWeeklyScore = (userId) => {
+    const userPicks = getUserPicksForWeek(userId);
+    // Count correct picks - check both result.isCorrect and isCorrect fields
+    const correctPicks = userPicks.filter((pick) => {
+      const isCorrect = pick.result?.isCorrect ?? pick.isCorrect;
+      return isCorrect === true;
+    }).length;
+    return correctPicks;
+  };
+
+  const getWeeklyWinners = () => {
+    const userScores = users.map((user) => ({
+      userId: user._id,
+      name: user.name,
+      score: getUserWeeklyScore(user._id),
+    }));
+
+    // Sort by score descending
+    userScores.sort((a, b) => b.score - a.score);
+
+    // Find highest score
+    const highestScore = userScores[0]?.score || 0;
+
+    // Return all users with the highest score (for ties)
+    return userScores.filter((user) => user.score === highestScore);
+  };
+
   const getMondayNightPicks = () => {
     const mondayNightGame = getMondayNightGame();
     if (!mondayNightGame) return [];
@@ -625,6 +652,52 @@ const AdminDashboard = () => {
           </div>
         )}
 
+        {/* Weekly Winners Summary */}
+        <div className="bg-white shadow overflow-hidden sm:rounded-md mb-6">
+          <div className="px-4 py-5 sm:px-6">
+            <h3 className="text-lg leading-6 font-medium text-gray-900">
+              Week {selectedWeek} Winners
+            </h3>
+            <p className="mt-1 max-w-2xl text-sm text-gray-500">
+              Users with the most correct picks this week
+            </p>
+          </div>
+          <div className="px-4 py-5 sm:px-6">
+            {getWeeklyWinners().length > 0 ? (
+              <div className="space-y-2">
+                {getWeeklyWinners().map((winner) => (
+                  <div
+                    key={winner.userId}
+                    className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200"
+                  >
+                    <div className="flex items-center">
+                      <span className="text-2xl mr-3">🏆</span>
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {winner.name}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          Week {selectedWeek} Winner
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-green-600">
+                        {winner.score}
+                      </div>
+                      <div className="text-xs text-gray-500">Correct Picks</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">
+                No scores available yet for this week
+              </p>
+            )}
+          </div>
+        </div>
+
         {/* Users and Picks Table */}
         <div className="bg-white shadow overflow-hidden sm:rounded-md">
           <div className="px-4 py-5 sm:px-6">
@@ -655,6 +728,9 @@ const AdminDashboard = () => {
                       </div>
                     </th>
                   ))}
+                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider bg-yellow-50">
+                    Week Score
+                  </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
@@ -699,6 +775,9 @@ const AdminDashboard = () => {
                         const pick = userPicks.find(
                           (p) => p.gameId._id === game._id
                         );
+                        const isCorrect = pick
+                          ? pick.result?.isCorrect ?? pick.isCorrect
+                          : null;
                         return (
                           <td
                             key={game._id}
@@ -708,12 +787,22 @@ const AdminDashboard = () => {
                               <div className="flex flex-col items-center">
                                 <span
                                   className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                                    pick.selectedTeam === game.awayTeam
+                                    isCorrect === true
+                                      ? "bg-green-100 text-green-800 border-2 border-green-500"
+                                      : isCorrect === false
+                                      ? "bg-red-100 text-red-800 border-2 border-red-500"
+                                      : pick.selectedTeam === game.awayTeam
                                       ? "bg-blue-100 text-blue-800"
-                                      : "bg-green-100 text-green-800"
+                                      : "bg-gray-100 text-gray-800"
                                   }`}
                                 >
                                   {pick.selectedTeam}
+                                  {isCorrect === true && (
+                                    <span className="ml-1">✓</span>
+                                  )}
+                                  {isCorrect === false && (
+                                    <span className="ml-1">✗</span>
+                                  )}
                                 </span>
                                 <button
                                   onClick={() => handleEditPick(pick)}
@@ -740,6 +829,15 @@ const AdminDashboard = () => {
                           </td>
                         );
                       })}
+
+                      <td className="px-6 py-4 whitespace-nowrap text-center bg-yellow-50">
+                        <div className="flex flex-col items-center">
+                          <span className="text-2xl font-bold text-gray-900">
+                            {getUserWeeklyScore(user._id)}
+                          </span>
+                          <span className="text-xs text-gray-500">Correct</span>
+                        </div>
+                      </td>
 
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div className="flex space-x-2">
